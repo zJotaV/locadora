@@ -1,80 +1,67 @@
-from datetime import datetime, timedelta
+from datetime import timedelta, date
+import random
 
-class Veiculo:
-    def init(self, marca, modelo, ano):
+lista_dos_carros = []
+lista_dos_clientes = []
+
+class Veiculo():
+    def __init__(self, marca, modelo, ano):
         self.marca = marca
         self.modelo = modelo
         self.ano = ano
-        self.disponivel = True
-        
+        self.estado_de_aluguel = False
+
 class Carro(Veiculo):
-    def init(self, marca, modelo, ano, placa, quilometragem, valor_diaria):
-        super().init(marca, modelo, ano)
+    def __init__(self,marca, modelo, ano, placa, quilometragem, valor):
+        super().__init__(marca, modelo, ano)
         self.placa = placa
         self.quilometragem = quilometragem
-        self.valor_diaria = valor_diaria
+        self.valor_diaria = valor
+
+    def alugar_carro(self, tempo_a_ser_alugado):
+        self.estado_de_aluguel = True
+        self.tempo_a_ser_alugado = int(tempo_a_ser_alugado)
+        self.valor_a_ser_pago = self.tempo_a_ser_alugado*self.valor_diaria
         
-class Cliente:
-    def init(self, nome, id):
-        self.nome = nome
-        self.id = id
-        self.historico_alugueis = []
-        
-class Aluguel:
-    def init(self, cliente, carro, data_inicio, data_fim):
-        self.cliente = cliente
-        self.carro = carro
-        self.data_inicio = data_inicio
-        self.data_fim = data_fim
-        self.valor_aluguel = 0
-        
-    def calcular_valor(self):
-        dias_aluguel = (self.data_fim - self.data_inicio).days + 1
-        valor_base = dias_aluguel * self.carro.valor_diaria
-        if (self.data_fim - datetime.now()).days < 0:
-            atraso = abs((self.data_fim - datetime.now()).days)
-            valor_atraso = atraso * self.carro.valor_diaria * 1.2
-            self.valor_aluguel = valor_base + valor_atraso
+        dia_alugado = date.today()
+        dia_final = timedelta(days= self.tempo_a_ser_alugado) + timedelta(-1)
+        dia_da_entrega = dia_alugado + dia_final
+    
+    def devolver_carro(self, dia_apos_aluguel):
+        self.dias_do_aluguel = dia_apos_aluguel
+        self.estado_de_aluguel = False
+
+        if(self.dias_do_aluguel > self.tempo_a_ser_alugado):
+            tempo_atrasado = self.dias_do_aluguel - self.tempo_a_ser_alugado
+            self.valor_a_ser_pago = (self.valor_diaria*self.tempo_a_ser_alugado) + ((self.valor_diaria+(self.valor_diaria*0.20))*tempo_atrasado)
+
         else:
-            self.valor_aluguel = valor_base
-            
-        self.carro.disponivel = True
-        self.cliente.historico_alugueis.append(self)
-        
-class App:
-    def init(self):
-        self.clientes = []
-        self.carros = []
-        self.alugueis = []
-        
-    def cadastrar_carro(self, carro):
-        self.carros.append(carro)
-        
-    def cadastrar_cliente(self, cliente):
-        self.clientes.append(cliente)
-        
-    def consultar_disponibilidade(self, carro):
-        return carro.disponivel
+            if(self.tempo_a_ser_alugado > self.dias_do_aluguel):
+                self.valor_a_ser_pago = self.valor_diaria*self.dias_do_aluguel
+
+            else:
+                self.valor_a_ser_pago = self.valor_diaria*self.tempo_a_ser_alugado
+
+    def __str__(self):
+        return f"marca: {self.marca}\n modelo: {self.modelo}\nano: {self.ano}\nvalor da diaria: {self.valor_diaria}\nplaca: {self.placa}\nquilometragem: {self.quilometragem}"
     
-    def listar_carros_por_marca(self, marca):
-        return [carro for carro in self.carros if carro.marca == marca]
-    
-    def listar_carros_por_modelo(self, modelo):
-        return [carro for carro in self.carros if carro.modelo == modelo]
-    
-    def listar_carros_por_ano(self, ano):
-        return [carro for carro in self.carros if carro.ano == ano]
-    
-    def alugar_carro(self, cliente, carro, data_inicio, data_fim):
-        if not carro.disponivel:
-            return False
-        aluguel = Aluguel(cliente, carro, data_inicio, data_fim)
-        aluguel.calcular_valor()
-        self.alugueis.append(aluguel)
-        return True
-    
-    def devolver_carro(self, aluguel):
-        if aluguel in self.alugueis:
-            self.alugueis.remove(aluguel)
-            return aluguel.valor_aluguel
-        return None
+class Cliente():
+    def __init__(self, nome, id_usuario) -> None:
+        self.nome = nome
+        self.id_usuario = id_usuario
+        self.historico_do_usuario = []
+
+    def consulta_de_historico(self):
+        if len(self.historico_do_usuario) > 0:
+            for carro in self.historico_do_usuario:
+                print("="*10)
+                print(f" {carro.marca}\n {carro.modelo}\n {carro.ano}\n {carro.placa} ")
+                print("="*10)
+        else:
+            print("o cliente não possui carros cadastrados")
+
+    def adicionar_ao_historico(self, carro_alugado):
+        lista_dos_carros.append(carro_alugado)
+
+    def __str__(self):
+        return f"Cliente: {self.nome} -- id: {self.id_usuario}"

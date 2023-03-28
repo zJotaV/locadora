@@ -180,6 +180,7 @@ class App(Carro):
         for clientes in lista_dos_clientes:
             print("*"*10)
             print(i,"-",clientes)
+            i=i+1
         print("\n")
 
     #Função para mostrar os carros cadastrados
@@ -189,7 +190,8 @@ class App(Carro):
             print("\n\n")
             print(i,"*"*10) 
             print(carros)
-            print("\n\n")  
+            print("\n\n")
+            i=i+1
 
     #Função para mostrar o histórico de aluguéis do cliente selecionado
     def ver_historico():
